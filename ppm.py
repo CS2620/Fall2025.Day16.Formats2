@@ -3,7 +3,7 @@ from PIL import Image
 image = Image.open('./zebra.jpg')
 raster = image.load()
 
-string = "P6\n"
+string = ["P6\n"]
 string += f"{image.width}\n"
 string += f"{image.height}\n"
 string += "256\n"
@@ -18,34 +18,30 @@ for y in range(image.height):
         string += r.to_bytes().decode("latin-1")
         string += g.to_bytes().decode("latin-1")
         string += b.to_bytes().decode("latin-1")
-    # string += "\n"
+
+final_string = "".join(string)
     
-with open("out.ppm", "w") as f:
-    f.write(string)
+with open("out.ppm", "wb") as f:
+    f.write(final_string.encode("latin-1"))
         
 
-lines = string.split("\n")
+lines = final_string.split("\n")
 assert lines[0] == "P6"
 width = int(lines[1])
 height = int(lines[2])
 _ = int(lines[3])
 
-remaining_string = string[len(lines[0]) + len(lines[1]) + len(lines[2]) + len(lines[3]) + 4]
-
-
-# raster_lines = lines[4:]
+remaining_string = final_string[len(lines[0]) + len(lines[1]) + len(lines[2]) + len(lines[3]) + 4:]
 
 ppm_image = Image.new("RGB", (width, height))
 ppm_raster = ppm_image.load()
 
 for y in range(height):
-    # line = raster_lines[y]
-    # rgb_triples = line.split()
     for x in range(width):
         index = (y*width+x)*3
-        r = int(remaining_string[index+0].encode("latin-1"))
-        g = int(remaining_string[index+1].encode("latin-1"))
-        b = int(remaining_string[index+2].encode("latin-1"))
+        r = int(ord(remaining_string[index+0]))
+        g = int(ord(remaining_string[index+1]))
+        b = int(ord(remaining_string[index+2]))
         ppm_raster[x,y] = (r, g, b)
         
 image.save("ppm.png")
